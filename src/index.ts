@@ -115,7 +115,9 @@ const typeDefs = `#graphql
         AllUser:[Users]
         User(id:ID!):Users
         AllCourses:[Courses]
+        Course(id:ID!):Courses
         Reviews:[Reviews]
+        Review(id:ID!):Reviews
     }
 
 
@@ -138,14 +140,20 @@ const resolvers = {
     AllUser() {
       return Users;
     },
+    User(_, args: any) {
+      return Users.find((User) => User.id === args.id);
+    },
     AllCourses() {
       return Courses;
+    },
+    Course(_, args: any) {
+      return Courses.find((Course) => Course.id === args.id);
     },
     Reviews() {
       return Reviews;
     },
-    User(_, args: any) {
-      return Users.find((User) => User.id === args.id);
+    Review(_, args: any) {
+      return Reviews.find((Review) => Review.id === args.id);
     },
   },
 };
