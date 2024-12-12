@@ -2,14 +2,26 @@ import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 // db
 const Users = [
-    { id: "1", Name: "Ahmed Ali", Courses: ["HTML Basics", "CSS Advanced"] },
-    { id: "2", Name: "Fatima Mohamed", Courses: ["JavaScript Essentials"] },
+    {
+        id: "1",
+        Name: "Ahmed Ali",
+        Courses: ["HTML Basics", "CSS Advanced"],
+    },
+    {
+        id: "2",
+        Name: "Fatima Mohamed",
+        Courses: ["JavaScript Essentials"],
+    },
     {
         id: "3",
         Name: "Hassan Yusuf",
         Courses: ["React Basics", "Node.js Advanced"],
     },
-    { id: "4", Name: "Ayan Warsame", Courses: ["Python for Beginners"] },
+    {
+        id: "4",
+        Name: "Ayan Warsame",
+        Courses: ["Python for Beginners"],
+    },
     {
         id: "5",
         Name: "Zahra Ahmed",
@@ -30,6 +42,7 @@ const Courses = [
         Price: 50,
         Tags: ["HTML", "Web", "Frontend"],
         Chapters: ["Introduction", "Elements", "Forms", "SEO Basics"],
+        CourseAuthor: "5",
     },
     {
         id: "2",
@@ -39,6 +52,7 @@ const Courses = [
         Price: 75,
         Tags: ["CSS", "Styling", "Web"],
         Chapters: ["Selectors", "Grid", "Flexbox", "Animations"],
+        CourseAuthor: "6",
     },
     {
         id: "3",
@@ -48,6 +62,7 @@ const Courses = [
         Price: 100,
         Tags: ["JavaScript", "Frontend", "Logic"],
         Chapters: ["Basics", "ES6", "DOM Manipulation", "Events"],
+        CourseAuthor: "4",
     },
     {
         id: "4",
@@ -57,6 +72,7 @@ const Courses = [
         Price: 120,
         Tags: ["React", "Components", "JSX"],
         Chapters: ["Introduction", "State", "Props", "Hooks"],
+        CourseAuthor: "4",
     },
     {
         id: "5",
@@ -66,6 +82,7 @@ const Courses = [
         Price: 150,
         Tags: ["Node.js", "Backend", "APIs"],
         Chapters: ["Express", "Routing", "Middleware", "Deployment"],
+        CourseAuthor: "3",
     },
     {
         id: "6",
@@ -75,15 +92,52 @@ const Courses = [
         Price: 80,
         Tags: ["Python", "Coding", "Backend"],
         Chapters: ["Syntax", "Loops", "Functions", "Modules"],
+        CourseAuthor: "1",
     },
 ];
 const Reviews = [
-    { id: "1", Message: "Great course! Very detailed.", Rating: 5 },
-    { id: "2", Message: "Helpful but could use more examples.", Rating: 4 },
-    { id: "3", Message: "Amazing instructor and content!", Rating: 5 },
-    { id: "4", Message: "A bit rushed towards the end.", Rating: 3 },
-    { id: "5", Message: "Clear and concise, loved it!", Rating: 5 },
-    { id: "6", Message: "Not beginner-friendly.", Rating: 2 },
+    {
+        id: "1",
+        Message: "Great course! Very detailed.",
+        Rating: 5,
+        Author: "3",
+        Course: "1",
+    },
+    {
+        id: "2",
+        Message: "Helpful but could use more examples.",
+        Rating: 4,
+        Author: "1",
+        Course: "3",
+    },
+    {
+        id: "3",
+        Message: "Amazing instructor and content!",
+        Rating: 5,
+        Author: "4",
+        Course: "5",
+    },
+    {
+        id: "4",
+        Message: "A bit rushed towards the end.",
+        Rating: 3,
+        Author: "6",
+        Course: "5",
+    },
+    {
+        id: "5",
+        Message: "Clear and concise, loved it!",
+        Rating: 5,
+        Author: "2",
+        Course: "2",
+    },
+    {
+        id: "6",
+        Message: "Not beginner-friendly.",
+        Rating: 2,
+        Author: "1",
+        Course: "6",
+    },
 ];
 // types
 const typeDefs = `#graphql
@@ -91,6 +145,7 @@ const typeDefs = `#graphql
         id:ID!
         Name: String!
         Courses: [String!]!
+        UserReviews:[Reviews!]
     }
 
     type Courses {
@@ -99,14 +154,20 @@ const typeDefs = `#graphql
         Students:Int
         cat:String!
         Price:Int!
+        CourseAuthor:String!
         Tags: [String]
         Chapters: [String!]!
+        Author:Users!
+        CourseReviews:[Reviews!]
     }
 
     type Reviews {
         id:ID!
         Message: String!
         Rating:Int
+        Author:String,
+        Course:Courses!
+        User:Users!
     }
 
     type Query {
@@ -150,6 +211,27 @@ const resolvers = {
         },
         Review(_, args) {
             return Reviews.find((Review) => Review.id === args.id);
+        },
+    },
+    // banaanka Query-ga ayaad ku samaynaysaa waxii ah  fetching nesting data
+    // tusaale hadaan doonayo ka waran user-ka dhamaan waxa uu reviews qoray
+    // sidan hoose ayad u samaynaysaaa
+    Users: {
+        UserReviews(parent) {
+            return Reviews.filter((Review) => Review.Author === parent.id);
+        },
+    },
+    Courses: {
+        CourseReviews(parent) {
+            return Reviews.filter((Review) => Review.Course === parent.id);
+        },
+        Author(parent) {
+            return Users.find((User) => User.id === parent.CourseAuthor);
+        },
+    },
+    Reviews: {
+        User(parent) {
+            return Users.find((User) => User.id === parent.Author);
         },
     },
 };
