@@ -159,7 +159,7 @@ const typeDefs = `#graphql
         CourseAuthor:String!
         Tags: [String]
         Chapters: [String!]!
-        Author:Users!
+        Author:Users
         CourseReviews:[Reviews!]
     }
 
@@ -181,8 +181,31 @@ const typeDefs = `#graphql
         Review(id:ID!):Reviews
     }
 
+    type Mutation {
+      DeleteCourse(id:ID!): [Courses]
+      AddCourse (Course: CourseInput!): Courses
+      UpdateCourse (id:ID!, Course: UpdateInput!): Courses
+    }
+    input CourseInput {
+        id:ID!
+        Title:String!
+        Students:Int
+        cat:String!
+        Price:Int!
+        CourseAuthor:String!
+        Tags: [String]
+        Chapters: [String!]!
+    }
 
-
+    input UpdateInput {
+        Title:String
+        Students:Int
+        cat:String
+        Price:Int
+        CourseAuthor:String
+        Tags: [String]
+        Chapters: [String!]
+    }
 `;
 
 // noocyad data-types ee graphql waa sidan hoose
@@ -201,7 +224,7 @@ const resolvers = {
     AllUser() {
       return Users;
     },
-    User(_: any, args: any) {
+    User(_: any, args: { id: string }) {
       return Users.find((User) => User.id === args.id);
     },
     AllCourses() {
@@ -238,6 +261,32 @@ const resolvers = {
   Reviews: {
     User(parent: { Author: string }) {
       return Users.find((User) => User.id === parent.Author);
+    },
+  },
+
+  Mutation: {
+    DeleteCourse(_, args: { id: string }) {
+      Courses.filter((Course) => Course.id !== args.id);
+      return Courses;
+    },
+    AddCourse(_: any, args: { Course: any }) {
+      let Course = {
+        ...args.Course,
+        id: "7",
+      };
+      Courses.push(Course);
+      return Course;
+    },
+
+    UpdateCourse(_: any, args: { id: string }) {
+      Courses.map((course) => {
+        if (course.id === args.id) {
+          return { ...course, ...args };
+        }
+        return course;
+      });
+
+      return Courses.find((c) => c.id === args.id);
     },
   },
 };
